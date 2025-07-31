@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Contactos_moviles.Models;
 
@@ -15,5 +16,13 @@ public partial class Contacto
 
     public string? Correo { get; set; }
 
-    public DateOnly? Fecha { get; set; }
+    public DateTime Fecha { get; set; }
+
+    [Required(ErrorMessage = "La dirección un campo obligatorio")]
+    public string Direccion { get; set; } = "";
+
+
 }
+
+
+

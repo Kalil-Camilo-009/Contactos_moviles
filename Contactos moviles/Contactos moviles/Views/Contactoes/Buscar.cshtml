@@ -1,0 +1,38 @@
+﻿@model IEnumerable<Contacto>
+
+@{
+    ViewData["Title"] = "Resultados de Búsqueda";
+}
+
+<h2>Resultados de Búsqueda</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Fecha</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var contacto in Model)
+        {
+            <tr>
+                <td>@contacto.Nombre</td>
+                <td>@contacto.Apellido</td>
+                <td>@contacto.Telefono</td>
+                <td>@contacto.Correo</td>
+                <td>@contacto.Fecha.ToShortDateString()</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@contacto.Id">Ver</a> |
+                    <a asp-action="Edit" asp-route-id="@contacto.Id">Editar</a> |
+                    <a asp-action="Delete" asp-route-id="@contacto.Id">Borrar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
