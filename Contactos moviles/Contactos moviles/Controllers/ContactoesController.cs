@@ -152,5 +152,23 @@ namespace Contactos_moviles.Controllers
         {
             return _context.Contactos.Any(e => e.Id == id);
         }
+
+        public async Task<IActionResult> Buscar(string filtro)
+        {
+            if (string.IsNullOrWhiteSpace(filtro))
+            {
+                return RedirectToAction("Index");
+            }
+
+            var resultados = await _context.Contactos
+                .Where(c =>
+                    c.Nombre.Contains(filtro) ||
+                    c.Apellido.Contains(filtro) ||
+                    c.Telefono.Contains(filtro))
+                .ToListAsync();
+
+            return View(resultados);
+        }
+
     }
 }
