@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Contactos_moviles.Models;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using System.IO;
 
 namespace Contactos_moviles.Controllers
 {
@@ -27,17 +30,11 @@ namespace Contactos_moviles.Controllers
         // GET: Contactoes/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var contacto = await _context.Contactos
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (contacto == null)
-            {
-                return NotFound();
-            }
+            if (contacto == null) return NotFound();
 
             return View(contacto);
         }
@@ -65,16 +62,11 @@ namespace Contactos_moviles.Controllers
         // GET: Contactoes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var contacto = await _context.Contactos.FindAsync(id);
-            if (contacto == null)
-            {
-                return NotFound();
-            }
+            if (contacto == null) return NotFound();
+
             return View(contacto);
         }
 
@@ -83,10 +75,7 @@ namespace Contactos_moviles.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Telefono,Correo,Fecha,Direccion")] Contacto contacto)
         {
-            if (id != contacto.Id)
-            {
-                return NotFound();
-            }
+            if (id != contacto.Id) return NotFound();
 
             if (ModelState.IsValid)
             {
@@ -97,14 +86,8 @@ namespace Contactos_moviles.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ContactoExists(contacto.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    if (!ContactoExists(contacto.Id)) return NotFound();
+                    else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
@@ -114,17 +97,11 @@ namespace Contactos_moviles.Controllers
         // GET: Contactoes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var contacto = await _context.Contactos
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (contacto == null)
-            {
-                return NotFound();
-            }
+            if (contacto == null) return NotFound();
 
             return View(contacto);
         }
@@ -138,9 +115,9 @@ namespace Contactos_moviles.Controllers
             if (contacto != null)
             {
                 _context.Contactos.Remove(contacto);
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
@@ -164,6 +141,71 @@ namespace Contactos_moviles.Controllers
                 .ToListAsync();
 
             return View(resultados);
+        }
+
+        
+        public IActionResult ImprimirPDF()
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            var contactos = _context.Contactos.ToList();
+
+            var document = Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(50);
+
+                    page.Header()
+                        .Text("Listado de Contactos")
+                        .FontSize(20)
+                        .SemiBold().FontColor(Colors.Blue.Medium);
+
+                    page.Content()
+                        .Table(table =>
+                        {
+                            table.ColumnsDefinition(columns =>
+                            {
+                                columns.RelativeColumn(); // Nombre
+                                columns.RelativeColumn(); // Apellido
+                                columns.RelativeColumn(); // Teléfono
+                                columns.RelativeColumn(); // Correo
+                                columns.RelativeColumn(); // Dirección
+                            });
+
+                            // Encabezados
+                            table.Header(header =>
+                            {
+                                header.Cell().Text("Nombre").SemiBold();
+                                header.Cell().Text("Apellido").SemiBold();
+                                header.Cell().Text("Teléfono").SemiBold();
+                                header.Cell().Text("Correo").SemiBold();
+                                header.Cell().Text("Dirección").SemiBold();
+                            });
+
+                            // Datos
+                            foreach (var c in contactos)
+                            {
+                                table.Cell().Text(c.Nombre);
+                                table.Cell().Text(c.Apellido);
+                                table.Cell().Text(c.Telefono);
+                                table.Cell().Text(c.Correo);
+                                table.Cell().Text(c.Direccion ?? "—");
+                            }
+                        });
+
+                    page.Footer()
+                        .AlignCenter()
+                        .Text(x =>
+                        {
+                            x.Span("Generado el ");
+                            x.Span(DateTime.Now.ToString("dd/MM/yyyy")).SemiBold();
+                        });
+                });
+            });
+
+            byte[] pdf = document.GeneratePdf();
+            return File(pdf, "application/pdf", "Contactos.pdf");
         }
     }
 }
