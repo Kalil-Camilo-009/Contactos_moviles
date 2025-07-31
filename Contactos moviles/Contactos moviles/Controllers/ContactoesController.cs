@@ -49,11 +49,9 @@ namespace Contactos_moviles.Controllers
         }
 
         // POST: Contactoes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nombre,Apellido,Telefono,Correo,Fecha")] Contacto contacto)
+        public async Task<IActionResult> Create([Bind("Id,Nombre,Apellido,Telefono,Correo,Fecha,Direccion")] Contacto contacto)
         {
             if (ModelState.IsValid)
             {
@@ -81,11 +79,9 @@ namespace Contactos_moviles.Controllers
         }
 
         // POST: Contactoes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Telefono,Correo,Fecha")] Contacto contacto)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Telefono,Correo,Fecha,Direccion")] Contacto contacto)
         {
             if (id != contacto.Id)
             {
@@ -169,6 +165,7 @@ namespace Contactos_moviles.Controllers
 
             return View(resultados);
         }
-
     }
 }
+
+
